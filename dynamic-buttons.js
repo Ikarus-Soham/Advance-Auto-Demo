@@ -6,6 +6,7 @@
     
     let buttonsInitialized = false;
     let observer = null;
+    let viewer3DInitialized = false; // Add flag to prevent multiple 3D viewer initializations
     
     // Wait for the DOM to be fully loaded
     function waitForElement(selector, callback, maxTries = 50) {
@@ -253,7 +254,7 @@
                 pointer-events: none;
             }
             
-            @media (max-width: 1023px) {
+            @media (min-width:768px) and (max-width: 1023px) {
                 .custom-button-container {
                     flex-direction: column;
                     align-items: flex-start;
@@ -275,6 +276,7 @@
                     height: 80vh;
                     top: 10vh;
                     bottom: auto;
+                    left: 3vh;
                 }
                 
                 .modal-overlay.small {
@@ -284,7 +286,11 @@
                     bottom: auto;
                 }
             }
-            
+            @media (min-width:1024px) and (max-width:1280px){
+            .modal-overlay{
+            left:6rem;
+            }
+            }
             @media (max-width: 767px) {
                 /* Mobile responsive modal */
                 .modal-overlay {
@@ -426,6 +432,62 @@
         return button;
     }
     
+    // Function to automatically show 3D viewer by default
+    function show3DViewerByDefault() {
+        // Prevent multiple initializations
+        if (viewer3DInitialized) {
+            return;
+        }
+        
+        const productImage = document.querySelector('.css-1xvhojq img');
+        if (productImage) {
+            // Get the immediate parent div of the image
+            const imageParent = productImage.parentElement;
+            
+            // Create iframe to replace the image
+            const iframe = document.createElement('iframe');
+            iframe.src = "https://do3z5bfxzxgi4.cloudfront.net/product?id=94542cc9-7f37-43f4-b9ee-d0a6d7c533b9";
+            iframe.width = "100%";
+            iframe.height = "100%";
+            iframe.frameBorder = "0";
+            iframe.style.border = "none";
+            iframe.style.borderRadius = "8px";
+            iframe.title = "3D Product Viewer";
+            iframe.id = "3d-iframe";
+            
+            // Hide the image
+            productImage.style.display = 'none';
+            
+            // Insert iframe in place of the image
+            imageParent.appendChild(iframe);
+            
+            // Hide the existing AR button
+            const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
+            if (existingARButton) {
+                existingARButton.style.display = 'none';
+            }
+            
+            // Hide our custom AR button
+            const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
+            if (customARButton) {
+                customARButton.style.display = 'none';
+            }
+            
+            // Add close button for the iframe
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.className = 'modal-close';
+            closeButton.onclick = function() {
+                close3DModal();
+            };
+            imageParent.appendChild(closeButton);
+            
+            // Mark as initialized to prevent multiple runs
+            viewer3DInitialized = true;
+            console.log('3D viewer opened by default');
+        }
+    }
+    
     // Create and show the 3D modal
     function show3DModal(type) {
         if (type === 'image') {
@@ -521,7 +583,7 @@
             <div class="modal-content">
                 <button class="modal-close" onclick="close3DModal()">&times;</button>
                 <iframe 
-                    src="https://sknzn7c0-5173.inc1.devtunnels.ms/product?id=b9db17b5-a5bf-4c1e-94ea-7d83686f46f1"
+                    src="https://do3z5bfxzxgi4.cloudfront.net/product?id=94542cc9-7f37-43f4-b9ee-d0a6d7c533b9"
                     width="100%" 
                     height="100%" 
                     frameborder="0"
@@ -573,6 +635,9 @@
             if (customARButton) {
                 customARButton.style.display = ''; // Restore display
             }
+            
+            // Reset the initialization flag when closing
+            viewer3DInitialized = false;
         } else {
             // Handle modal case
             const modal = document.getElementById('modal-3d');
@@ -722,20 +787,42 @@
         }
     }
     
+    // Function to initialize 3D viewer by default
+    function initialize3DViewer() {
+        // Prevent multiple initializations
+        if (viewer3DInitialized) {
+            return;
+        }
+        
+        // Wait for the image container to be available
+        const imageContainer = document.querySelector('.css-1xvhojq');
+        if (imageContainer && imageContainer.querySelector('img')) {
+            // Show 3D viewer by default
+            show3DViewerByDefault();
+        } else {
+            // If not ready yet, try again after a short delay
+            setTimeout(initialize3DViewer, 500);
+        }
+    }
+    
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             injectCustomStyles();
             // Wait a bit for dynamic content to load
             setTimeout(initializeButtons, 1000);
+            // Initialize 3D viewer by default (only once)
+            setTimeout(initialize3DViewer, 1500);
         });
     } else {
         injectCustomStyles();
         // DOM is already ready, wait for dynamic content
         setTimeout(initializeButtons, 1000);
+        // Initialize 3D viewer by default (only once)
+        setTimeout(initialize3DViewer, 1500);
     }
     
-    // Also try to initialize after a longer delay in case of very slow loading
+    // Also try to initialize after a longer delay in case of very slow loading (only once)
     setTimeout(initializeButtons, 3000);
     
     // Listen for dynamic content changes
@@ -750,6 +837,11 @@
                 // Check if our buttons are already added
                 if (!document.querySelector('.custom-button-container') && !buttonsInitialized) {
                     setTimeout(initializeButtons, 500);
+                }
+                
+                // Check if we can initialize 3D viewer (only if not already initialized)
+                if (!document.getElementById('3d-iframe') && !viewer3DInitialized) {
+                    setTimeout(initialize3DViewer, 500);
                 }
             }
         });
