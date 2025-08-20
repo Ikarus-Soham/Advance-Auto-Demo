@@ -178,7 +178,6 @@
             .modal-overlay {
                 position: absolute;
                 top: 0;
-                left: 10rem;
                 bottom: 40rem;
 
                 width: 80vw;
@@ -195,11 +194,9 @@
             }
             
             .modal-overlay.small {
-                width: 40vw;
-                height: 64vh;
-                left: 12rem;
-                bottom: 20rem;
-                top:5rem;
+                width: 330px;
+                height: 330px;
+                top: 5rem;
                 box-shadow: none;
                 border: none;
             }
@@ -226,14 +223,15 @@
                 right: 15px;
                 background: rgba(255, 255, 255, 0.9);
                 border: none;
-                font-size: 20px;
+                font-size: 35px;
+                font-style: bold;
                 cursor: pointer;
                 color: #666;
                 padding: 8px;
                 line-height: 1;
                 border-radius: 50%;
-                width: 30px;
-                height: 30px;
+                width: 40px;
+                height: 40px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -242,6 +240,11 @@
             
             .modal-close:hover {
                 color: #000;
+            }
+            
+            /* Ensure parent container has relative positioning for close button */
+            .css-1xvhojq {
+                position: relative;
             }
             
             /* Hide image when modal is open */
@@ -270,16 +273,14 @@
                 .modal-overlay {
                     width: 90vw;
                     height: 80vh;
-                    left: 5vw;
                     top: 10vh;
                     bottom: auto;
                 }
                 
                 .modal-overlay.small {
-                    width: 70vw;
-                    height: 60vh;
-                    left: 15vw;
-                    top: 20vh;
+                    width: 330px;
+                    height: 330px;
+                    top: 10vh;
                     bottom: auto;
                 }
             }
@@ -289,17 +290,16 @@
                 .modal-overlay {
                     width: 95vw;
                     height: 70vh;
-                    left: 2.5vw;
                     top: 7.5vh;
                     bottom: auto;
                 }
                 
                 .modal-overlay.small {
-                    width: 95vw;
-                    height: 65vh;
+                    width: 400px;
+                    height: 600px;
                     left: 5vw;
                     top: 7vh;
-                    bottom: auto;
+                    bottom: 0px;
                 }
                 
                 .modal-close {
@@ -334,17 +334,25 @@
                 }
             }
 
+            @media (min-width: 1280px) {
+                .modal-overlay.small {
+                    width: 518px;
+                    height: 518px;
+                }
+            }
+            
             @media (min-width: 1900px){
                 .modal-overlay {
-                    left: 10%;
+                left: 0;
                     bottom: 40rem;
+                    width: 100vh;
                 }
                 .modal-overlay.small {
                     left: 27%;
                     bottom: 10%;
-                    top:5rem;
-                    height: 40vh;
-                    width:25vw;
+                    top: 5rem;
+                    height: 518px;
+                    width: 518px;
                 }
             }
         `;
@@ -420,45 +428,86 @@
     
     // Create and show the 3D modal
     function show3DModal(type) {
-        // Create modal if it doesn't exist
-        let modal = document.getElementById('modal-3d');
-        if (!modal) {
-            modal = create3DModal();
-            // Find the image container and append modal there
-            const imageContainer = document.querySelector('.css-1xvhojq');
-            if (imageContainer) {
-                imageContainer.appendChild(modal);
-            } else {
-                document.body.appendChild(modal);
-            }
-        }
-        
-        // Apply size class based on type
         if (type === 'image') {
-            modal.classList.add('small');
+            // For image area, replace the image with iframe directly
+            const productImage = document.querySelector('.css-1xvhojq img');
+            if (productImage) {
+                // Get the immediate parent div of the image
+                const imageParent = productImage.parentElement;
+                
+                // Create iframe to replace the image
+                const iframe = document.createElement('iframe');
+                iframe.src = "https://do3z5bfxzxgi4.cloudfront.net/product?id=94542cc9-7f37-43f4-b9ee-d0a6d7c533b9";
+                iframe.width = "100%";
+                iframe.height = "100%";
+                iframe.frameBorder = "0";
+                iframe.style.border = "none";
+                iframe.style.borderRadius = "8px";
+                iframe.title = "3D Product Viewer";
+                iframe.id = "3d-iframe";
+                
+                // Hide the image
+                productImage.style.display = 'none';
+                
+                // Insert iframe in place of the image
+                imageParent.appendChild(iframe);
+                
+                // Hide the existing AR button
+                const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
+                if (existingARButton) {
+                    existingARButton.style.display = 'none';
+                }
+                
+                // Hide our custom AR button
+                const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
+                if (customARButton) {
+                    customARButton.style.display = 'none';
+                }
+                
+                // Add close button for the iframe
+                const closeButton = document.createElement('button');
+                closeButton.innerHTML = '&times;';
+                closeButton.className = 'modal-close';
+                closeButton.onclick = function() {
+                    close3DModal();
+                };
+                imageParent.appendChild(closeButton);
+                
+            }
         } else {
-            modal.classList.remove('small');
-        }
-        
-        // Show modal
-        modal.classList.add('show');
-        
-        // Hide the product image
-        const productImage = document.querySelector('.css-1xvhojq img');
-        if (productImage) {
-            productImage.style.display = 'none';
-        }
-        
-        // Hide the existing AR button
-        const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
-        if (existingARButton) {
-            existingARButton.style.display = 'none';
-        }
-        
-        // Hide our custom AR button
-        const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
-        if (customARButton) {
-            customARButton.style.display = 'none';
+            // For main button, use the existing modal approach
+            let modal = document.getElementById('modal-3d');
+            if (!modal) {
+                modal = create3DModal();
+                // Find the image container and append modal there
+                const imageContainer = document.querySelector('.css-1xvhojq');
+                if (imageContainer) {
+                    imageContainer.appendChild(modal);
+                } else {
+                    document.body.appendChild(modal);
+                }
+            }
+            
+            // Show modal
+            modal.classList.add('show');
+            
+            // Hide the product image
+            const productImage = document.querySelector('.css-1xvhojq img');
+            if (productImage) {
+                productImage.style.display = 'none';
+            }
+            
+            // Hide the existing AR button
+            const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
+            if (existingARButton) {
+                existingARButton.style.display = 'none';
+            }
+            
+            // Hide our custom AR button
+            const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
+            if (customARButton) {
+                customARButton.style.display = 'none';
+            }
         }
     }
     
@@ -494,27 +543,60 @@
     
     // Close the 3D modal
     function close3DModal() {
-        const modal = document.getElementById('modal-3d');
-        if (modal) {
-            modal.classList.remove('show');
-        }
-        
-        // Show the product image again
-        const productImage = document.querySelector('.css-1xvhojq img');
-        if (productImage) {
-            productImage.style.display = ''; // Restore display
-        }
-        
-        // Show the existing AR button again
-        const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
-        if (existingARButton) {
-            existingARButton.style.display = ''; // Restore display
-        }
-        
-        // Show our custom AR button again
-        const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
-        if (customARButton) {
-            customARButton.style.display = ''; // Restore display
+        // Check if iframe is being used (image area)
+        const iframe = document.getElementById('3d-iframe');
+        if (iframe) {
+            // Find and remove the close button first (before removing iframe)
+            const imageContainer = document.querySelector('.css-1xvhojq');
+            const closeButton = imageContainer.querySelector('.modal-close');
+            if (closeButton) {
+                closeButton.remove();
+            }
+            
+            // Remove the iframe
+            iframe.remove();
+            
+            // Show the product image again
+            const productImage = document.querySelector('.css-1xvhojq img');
+            if (productImage) {
+                productImage.style.display = ''; // Restore display
+            }
+            
+            // Show the existing AR button again
+            const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
+            if (existingARButton) {
+                existingARButton.style.display = ''; // Restore display
+            }
+            
+            // Show our custom AR button again
+            const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
+            if (customARButton) {
+                customARButton.style.display = ''; // Restore display
+            }
+        } else {
+            // Handle modal case
+            const modal = document.getElementById('modal-3d');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+            
+            // Show the product image again
+            const productImage = document.querySelector('.css-1xvhojq img');
+            if (productImage) {
+                productImage.style.display = ''; // Restore display
+            }
+            
+            // Show the existing AR button again
+            const existingARButton = document.querySelector('.css-1xvhojq .ar-button');
+            if (existingARButton) {
+                existingARButton.style.display = ''; // Restore display
+            }
+            
+            // Show our custom AR button again
+            const customARButton = document.querySelector('.css-1xvhojq .ar-button-container');
+            if (customARButton) {
+                customARButton.style.display = ''; // Restore display
+            }
         }
     }
     
