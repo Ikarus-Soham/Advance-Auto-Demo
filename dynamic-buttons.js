@@ -445,7 +445,7 @@
             
             // Create iframe to replace the image
             const iframe = document.createElement('iframe');
-            iframe.src = "https://do3z5bfxzxgi4.cloudfront.net/product?id=94542cc9-7f37-43f4-b9ee-d0a6d7c533b9";
+            iframe.src = "https://do3z5bfxzxgi4.cloudfront.net/product?id=e9baf8af-160f-45b9-90c6-b2eb9f002016";
             iframe.width = "100%";
             iframe.height = "100%";
             iframe.frameBorder = "0";
